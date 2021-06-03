@@ -1,0 +1,53 @@
+version: '3'
+services:
+# Postgres
+  db:
+    container_name: mypostgres
+    image: postgres:11.6
+    environment:
+      - POSTGRES_PASSWORD=Ev0lable
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=postgres
+    networks:
+      - postgres
+    ports:
+      - "5432:5432"
+    volumes:
+        - ./postgresql:/var/lib/postgresql/data
+    restart: always
+# Odoo13
+  odoo:
+    container_name: odoo13
+    image: odoo:v2
+    depends_on:
+       - db
+    ports:
+       - "10013:8069"
+    tty: true
+    networks:
+       - postgres
+    command: -- --dev=reload
+    #    command: odoo scaffold /mnt/extra-addons/test_module
+    environment:
+       - HOST=db
+       - USER=odoo
+       - PASSWORD=Ev0lable
+    volumes:
+       - ./addons:/mnt/extra-addons
+       - ./etc:/etc/odoo
+    restart: always
+    
+  #Nginx Service
+#  webserver:
+#    image: nginx:alpine
+#    container_name: nginxapp
+#    restart: unless-stopped
+#    tty: true
+#    ports:
+#       - "80:80"
+#       - "443:443"
+#    networks:
+#       - postgres
+networks:
+   postgres:
+      driver: bridge

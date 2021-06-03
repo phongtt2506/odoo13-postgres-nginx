@@ -1,0 +1,48 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: mypostgres
+#    hostname: 'odoo'  # AND HERE 
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    networks:
+      - postgres
+  app:
+    container_name: odoo_web
+#    build: .
+    image: odoo:v3
+    restart: always
+    depends_on:
+       - db
+#    environment:
+#       - HOST=odoo
+#       - USER=odoo
+#       - PASSWORD=odoo
+    ports:
+       - "8071:8069"
+    volumes: 
+       - ./addons:/mnt/extra-addons
+       - ./etc:/etc/odoo
+    tty: true
+    networks:
+       - postgres
+  nginxapp:
+     container_name: nginxapp
+     image: nginx:latest
+#     environment:
+     depends_on:
+       - db
+     ports:
+       - "5050:80"
+     networks:
+       - postgres
+     restart: unless-stopped
+networks:
+    postgres:
+      driver: bridge
